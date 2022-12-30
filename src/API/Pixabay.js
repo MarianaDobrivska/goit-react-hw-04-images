@@ -12,6 +12,5 @@ export function getPhotos(query, page = 1) {
 
   axios.defaults.baseURL = 'https://pixabay.com';
   const data = axios.get(`/api/?`, { params }).then(data => data);
-  console.log(data);
   return data;
 }
