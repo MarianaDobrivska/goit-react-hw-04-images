@@ -6,6 +6,7 @@ import {
   StyledLabel,
   Input,
 } from './Searchbar.styled';
+import PropTypes from 'prop-types';
 
 export const Searchbar = ({ onSubmit }) => {
   return (
@@ -33,4 +34,8 @@ export const Searchbar = ({ onSubmit }) => {
       </Formik>
     </StyledSearchbarHeader>
   );
+};
+
+Searchbar.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
 };

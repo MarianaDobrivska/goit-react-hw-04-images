@@ -2,8 +2,13 @@ import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
 import { Component } from 'react';
 import { Modal } from 'components/Modal/Modal';
 import { Styledlist } from './ImageGallery.styled';
+import PropTypes from 'prop-types';
 
 export class ImageGallery extends Component {
+  static propTypes = {
+    photos: PropTypes.arrayOf(PropTypes.object).isRequired,
+  };
+
   state = {
     isModalOpen: false,
     data: {
@@ -34,8 +39,6 @@ export class ImageGallery extends Component {
                 key={photo.id}
                 openModal={this.openModal}
                 largeImageURL={photo.largeImageURL}
-                // closeModal={this.closeModal}
-                // isModalOpen={this.state.isModalOpen}
               />
             );
           })}
