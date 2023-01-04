@@ -1,4 +1,3 @@
-import { Component } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { getPhotos } from 'API/Pixabay';
@@ -8,80 +7,75 @@ import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
+import { useState } from 'react';
+import { useEffect } from 'react';
 
-export class App extends Component {
-  state = {
-    query: '',
-    photos: [],
-    page: 1,
-    visibleLoader: false,
-    totalPages: 0,
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [photos, setPhotos] = useState([]);
+  const [page, setPage] = useState(1);
+  const [visibleLoader, setVisibleLoader] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const handleSearchButtonSubmit = value => {
+    setQuery(value);
+    setPhotos([]);
+    setPage(1);
+    setTotalPages(0);
   };
 
-  handleSearchButtonSubmit = value => {
-    this.setState({ query: value, photos: [], page: 1, totalPages: 0 });
+  const handleLoadMoreSubmit = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  handleLoadMoreSubmit = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
-  };
-
-  isLoadMoreShown = () => {
-    const { totalPages, page } = this.state;
-
+  const isLoadMoreShown = () => {
     if (totalPages === page || totalPages === 0) {
       return false;
     } else {
       return true;
     }
   };
-  componentDidUpdate(_, prevState) {
-    const { query, photos, page } = this.state;
 
-    if (query !== prevState.query || page !== prevState.page) {
-      this.setState({ visibleLoader: true });
-      getPhotos(query, page)
-        .then(({ data }) => {
-          if (data.hits.length === 0) {
-            toast.info(
-              `Sorry, there are no images matching your search query '${query}'. Please try again.`,
-              {
-                position: toast.POSITION.TOP_RIGHT,
-              }
-            );
-            return '';
-          }
-          let countTotalPages = Math.ceil(data.totalHits / 12);
-          this.setState({
-            photos: [...photos, ...data.hits],
-            totalPages: countTotalPages,
-          });
-        })
-        .catch(error => {
-          toast.error('Sorry, something went wrong. Please try again.', {
-            position: toast.POSITION.TOP_RIGHT,
-          });
-        })
-        .finally(() => {
-          this.setState({ visibleLoader: false });
+  useEffect(() => {
+    if (query === '') return;
+
+    setVisibleLoader(true);
+
+    getPhotos(query, page)
+      .then(({ data }) => {
+        if (data.hits.length === 0) {
+          toast.info(
+            `Sorry, there are no images matching your search query '${query}'. Please try again.`,
+            {
+              position: toast.POSITION.TOP_RIGHT,
+            }
+          );
+          return '';
+        }
+        let countTotalPages = Math.ceil(data.totalHits / 12);
+        setPhotos(prevPhotos => [...prevPhotos, ...data.hits]);
+        setTotalPages(countTotalPages);
+      })
+      .catch(error => {
+        toast.error('Sorry, something went wrong. Please try again.', {
+          position: toast.POSITION.TOP_RIGHT,
         });
-    }
-  }
+      })
+      .finally(() => {
+        setVisibleLoader(false);
+      });
+  }, [query, page]);
 
-  render() {
-    return (
-      <StyledApp>
-        <Searchbar onSubmit={this.handleSearchButtonSubmit} />
-        <ImageGallery photos={this.state.photos} />
-        {this.state.visibleLoader && <Loader />}
+  return (
+    <StyledApp>
+      <Searchbar onSubmit={handleSearchButtonSubmit} />
+      <ImageGallery photos={photos} />
+      {visibleLoader && <Loader />}
 
-        {this.isLoadMoreShown() && !this.state.visibleLoader && (
-          <Button title="Load more" onClick={this.handleLoadMoreSubmit} />
-        )}
-        <ToastContainer />
-      </StyledApp>
-    );
-  }
-}
+      {isLoadMoreShown() && !visibleLoader && (
+        <Button title="Load more" onClick={handleLoadMoreSubmit} />
+      )}
+      <ToastContainer />
+    </StyledApp>
+  );
+};

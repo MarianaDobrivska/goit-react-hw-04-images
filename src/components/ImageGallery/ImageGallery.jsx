@@ -1,56 +1,44 @@
 import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
-import { Component } from 'react';
 import { Modal } from 'components/Modal/Modal';
 import { Styledlist } from './ImageGallery.styled';
 import PropTypes from 'prop-types';
+import { useState } from 'react';
 
-export class ImageGallery extends Component {
-  static propTypes = {
-    photos: PropTypes.arrayOf(PropTypes.object).isRequired,
+export const ImageGallery = ({ photos }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [tags, setTags] = useState('');
+  const [photo, setPhoto] = useState('');
+
+  const openModal = (tag, value) => {
+    setIsModalOpen(true);
+    setTags(tag);
+    setPhoto(value);
   };
 
-  state = {
-    isModalOpen: false,
-    data: {
-      tags: '',
-      photo: ',',
-    },
-  };
+  const closeModal = () => setIsModalOpen(false);
 
-  openModal = (tag, value) =>
-    this.setState({
-      isModalOpen: true,
-      data: {
-        tags: tag,
-        photo: value,
-      },
-    });
-  closeModal = () => this.setState({ isModalOpen: false });
+  return (
+    <>
+      <Styledlist>
+        {photos.map(photo => {
+          return (
+            <ImageGalleryItem
+              webformatURL={photo.webformatURL}
+              tags={photo.tags}
+              key={photo.id}
+              openModal={openModal}
+              largeImageURL={photo.largeImageURL}
+            />
+          );
+        })}
+      </Styledlist>
+      {isModalOpen && (
+        <Modal largeImageURL={photo} tags={tags} onClose={closeModal} />
+      )}
+    </>
+  );
+};
 
-  render() {
-    return (
-      <>
-        <Styledlist>
-          {this.props.photos.map(photo => {
-            return (
-              <ImageGalleryItem
-                webformatURL={photo.webformatURL}
-                tags={photo.tags}
-                key={photo.id}
-                openModal={this.openModal}
-                largeImageURL={photo.largeImageURL}
-              />
-            );
-          })}
-        </Styledlist>
-        {this.state.isModalOpen && (
-          <Modal
-            largeImageURL={this.state.data.photo}
-            tags={this.state.data.tags}
-            onClose={this.closeModal}
-          />
-        )}
-      </>
-    );
-  }
-}
+ImageGallery.propTypes = {
+  photos: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
